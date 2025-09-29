@@ -145,5 +145,38 @@ class DataLoader:
         
         return data['X_train'], data['X_test'], data['y_train'], data['y_test']
     
+
+def load_fashion_mnist(subset_size=None, preprocessing='standard', random_state=42):    # Convenience function to load and preprocess Fashion-MNIST data.
+    """
+    Args:
+        subset_size (int, optional): Use subset for faster experimentation
+        preprocessing (str): Preprocessing method
+    """
+    loader = DataLoader()
+    X_train, X_test, y_train, y_test = loader.load_fashion_mnist(
+        subset_size=subset_size, 
+        random_state=random_state
+    )
     
+    if preprocessing != 'none':
+        X_train, X_test = loader.preprocess_data(X_train, X_test, method=preprocessing)
+    
+    return X_train, X_test, y_train, y_test
+
+if __name__ == "__main__":
+    # Example usage
+    print("Loading Fashion-MNIST dataset...")
+    X_train, X_test, y_train, y_test = load_fashion_mnist(subset_size=5000)
+    
+    print(f"Training set shape: {X_train.shape}")
+    print(f"Test set shape: {X_test.shape}")
+    print(f"Number of classes: {len(np.unique(y_train))}")
+    print(f"Class distribution: {np.bincount(y_train)}")
+    
+    # Display class labels
+    loader = DataLoader()
+    class_info = loader.get_class_info()
+    print("\nClass labels:")
+    for i, label in class_info.items():
+        print(f"{i}: {label}")
     
