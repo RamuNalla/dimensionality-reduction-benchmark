@@ -97,7 +97,7 @@ class AutoEncoder:
             raise ValueError("Autoencoder must be fitted before transform")
         return self.encoder.predict(X, verbose=0)
     
-    def fit_transform(self, X):    # Fit and transform data.
+    def fit_transform(self, X):    # Fit and transform data (convenience method that combines fit and transform).
         """
         Args:
             X (np.ndarray): Input data
@@ -119,3 +119,63 @@ class AutoEncoder:
         if self.autoencoder is None:
             raise ValueError("Autoencoder must be fitted before inverse_transform")
         return self.autoencoder.predict(X_encoded, verbose=0)
+    
+
+class DimensionalityReducer:        # Unified interface for various dimensionality reduction techniques.
+
+    def __init__(self, random_state=42):
+        
+        self.random_state = random_state
+        self.methods = {}
+        self.fitted_models = {}
+        self.results = {}
+
+    def _get_method(self, method_name, n_components=2, **kwargs):
+        """
+        Args:
+            method_name (str): Name of the method
+            n_components (int): Number of components
+            **kwargs: Additional method-specific parameters
+            
+        Returns:
+            sklearn estimator: Configured method instance
+        """
+        if method_name == 'pca':
+            return PCA(n_components=n_components, random_state=self.random_state, **kwargs)
+        
+        elif method_name == 'lda':
+            # LDA is limited by number of classes - 1
+            return LDA(n_components=min(n_components, 9), **kwargs)
+        
+        elif method_name == 'ica':
+            return FastICA(n_components=n_components, random_state=self.random_state, 
+                          max_iter=1000, **kwargs)
+        
+        elif method_name == 'svd':
+            return TruncatedSVD(n_components=n_components, random_state=self.random_state, **kwargs)
+        
+        elif method_name == 'kernel_pca':
+            return KernelPCA(n_components=n_components, kernel='rbf', 
+                           random_state=self.random_state, **kwargs)
+        
+        elif method_name == 'tsne':
+            return TSNE(n_components=n_components, random_state=self.random_state,
+                       perplexity=30, n_iter=1000, **kwargs)
+        
+        elif method_name == 'umap':
+            return umap.UMAP(n_components=n_components, random_state=self.random_state,
+                            n_neighbors=15, min_dist=0.1, **kwargs)
+        
+        elif method_name == 'isomap':
+            return Isomap(n_components=n_components, n_neighbors=10, **kwargs)
+        
+        elif method_name == 'lle':
+            return LocallyLinearEmbedding(n_components=n_components, 
+                                        random_state=self.random_state,
+                                        n_neighbors=10, **kwargs)
+        
+        elif method_name == 'autoencoder':
+            return AutoEncoder(encoding_dim=n_components, **kwargs)
+        
+        else:
+            raise ValueError(f"Unknown method: {method_name}")
