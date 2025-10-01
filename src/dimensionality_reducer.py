@@ -179,3 +179,62 @@ class DimensionalityReducer:        # Unified interface for various dimensionali
         
         else:
             raise ValueError(f"Unknown method: {method_name}")
+        
+
+    def fit_transform_method(self, X, y=None, method_name='pca', n_components=2, **kwargs): # Apply single dimensionality reduction method.
+        """
+        Args:
+            X (np.ndarray): Input data
+            y (np.ndarray, optional): Labels (required for LDA)
+            method_name (str): Method to use
+            n_components (int): Number of components
+            **kwargs: Method-specific parameters
+            
+        Returns:
+            dict: Results containing transformed data and metadata
+        """
+        logger.info(f"Applying {method_name.upper()} with {n_components} components...")
+        
+        # Get method instance
+        method = self._get_method(method_name, n_components, **kwargs)
+        
+        # Record start time
+        start_time = time.time()
+        
+        # Fit and transform
+        try:
+            if method_name == 'lda' and y is not None:
+                X_transformed = method.fit_transform(X, y)
+            else:
+                X_transformed = method.fit_transform(X)
+            
+            fit_time = time.time() - start_time
+            
+            # Store fitted model
+            self.fitted_models[method_name] = method
+            
+            # Calculate explained variance if available
+            explained_variance_ratio = None
+            if hasattr(method, 'explained_variance_ratio_'):
+                explained_variance_ratio = method.explained_variance_ratio_
+            
+            result = {
+                'method': method_name,
+                'n_components': n_components,
+                'embedding': X_transformed,
+                'fit_time': fit_time,
+                'explained_variance_ratio': explained_variance_ratio,
+                'model': method,
+                'parameters': kwargs
+            }
+            
+            logger.info(f"{method_name.upper()} completed in {fit_time:.2f} seconds")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error in {method_name}: {str(e)}")
+            return {
+                'method': method_name,
+                'error': str(e),
+                'fit_time': time.time() - start_time
+            }
