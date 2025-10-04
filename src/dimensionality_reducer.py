@@ -238,3 +238,69 @@ class DimensionalityReducer:        # Unified interface for various dimensionali
                 'error': str(e),
                 'fit_time': time.time() - start_time
             }
+
+    def compare_methods(self, X, y=None, methods=None, n_components=2, **method_kwargs):
+        """
+        Compare multiple dimensionality reduction methods.
+        
+        Args:
+            X (np.ndarray): Input data
+            y (np.ndarray, optional): Labels
+            methods (list): List of method names to compare
+            n_components (int): Number of components
+            **method_kwargs: Method-specific parameters (nested dict)
+            
+        Returns:
+            dict: Results for each method
+        """
+        if methods is None:
+            methods = ['pca', 'lda', 'ica', 'svd', 'tsne', 'umap', 'kernel_pca', 'isomap', 'lle']
+        
+        results = {}
+        
+        for method_name in methods:
+            # Get method-specific kwargs
+            kwargs = method_kwargs.get(method_name, {})
+            
+            # Skip LDA if no labels provided
+            if method_name == 'lda' and y is None:
+                logger.warning("Skipping LDA: requires labels")
+                continue
+            
+            try:
+                result = self.fit_transform_method(
+                    X, y, method_name, n_components, **kwargs
+                )
+                results[method_name] = result
+                
+            except Exception as e:
+                logger.error(f"Failed to apply {method_name}: {str(e)}")
+                results[method_name] = {'method': method_name, 'error': str(e)}
+        
+        self.results = results
+        return results
+    
+    def transform_new_data(self, X_new, method_name):
+        """
+        Transform new data using fitted model.
+        
+        Args:
+            X_new (np.ndarray): New data to transform
+            method_name (str): Method to use
+            
+        Returns:
+            np.ndarray: Transformed data
+        """
+        if method_name not in self.fitted_models:
+            raise ValueError(f"Method {method_name} not fitted yet")
+        
+        method = self.fitted_models[method_name]
+        
+        # Handle methods that don't support transform on new data
+        if method_name in ['tsne']:
+            raise ValueError(f"{method_name} doesn't support transforming new data")
+        
+        try:
+            return method.transform(X_new)
+        except AttributeError:
+            raise ValueError(f"{method_name} doesn't support transforming new data")
