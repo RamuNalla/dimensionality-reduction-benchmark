@@ -304,3 +304,124 @@ class DimensionalityReducer:        # Unified interface for various dimensionali
             return method.transform(X_new)
         except AttributeError:
             raise ValueError(f"{method_name} doesn't support transforming new data")
+
+    
+    def get_method_info(self):
+        """
+        Get information about available methods.
+        
+        Returns:
+            dict: Method information and capabilities
+        """
+        methods_info = {
+            'pca': {
+                'name': 'Principal Component Analysis',
+                'type': 'linear',
+                'supports_transform': True,
+                'explained_variance': True,
+                'parameters': ['n_components']
+            },
+            'lda': {
+                'name': 'Linear Discriminant Analysis', 
+                'type': 'supervised_linear',
+                'supports_transform': True,
+                'explained_variance': True,
+                'requires_labels': True,
+                'parameters': ['n_components']
+            },
+            'ica': {
+                'name': 'Independent Component Analysis',
+                'type': 'linear',
+                'supports_transform': True,
+                'explained_variance': False,
+                'parameters': ['n_components', 'max_iter']
+            },
+            'svd': {
+                'name': 'Truncated SVD',
+                'type': 'linear', 
+                'supports_transform': True,
+                'explained_variance': True,
+                'parameters': ['n_components']
+            },
+            'kernel_pca': {
+                'name': 'Kernel PCA',
+                'type': 'nonlinear',
+                'supports_transform': True,
+                'explained_variance': False,
+                'parameters': ['n_components', 'kernel', 'gamma']
+            },
+            'tsne': {
+                'name': 't-SNE',
+                'type': 'nonlinear',
+                'supports_transform': False,
+                'explained_variance': False,
+                'parameters': ['n_components', 'perplexity', 'n_iter']
+            },
+            'umap': {
+                'name': 'UMAP',
+                'type': 'nonlinear',
+                'supports_transform': True,
+                'explained_variance': False,
+                'parameters': ['n_components', 'n_neighbors', 'min_dist']
+            },
+            'isomap': {
+                'name': 'Isomap',
+                'type': 'nonlinear',
+                'supports_transform': True,
+                'explained_variance': False,
+                'parameters': ['n_components', 'n_neighbors']
+            },
+            'lle': {
+                'name': 'Locally Linear Embedding',
+                'type': 'nonlinear',
+                'supports_transform': False,
+                'explained_variance': False,
+                'parameters': ['n_components', 'n_neighbors']
+            },
+            'autoencoder': {
+                'name': 'Autoencoder',
+                'type': 'neural',
+                'supports_transform': True,
+                'explained_variance': False,
+                'parameters': ['encoding_dim', 'hidden_layers', 'epochs']
+            }
+        }
+        return methods_info
+    
+    def get_hyperparameter_grids(self):
+        """
+        Get hyperparameter grids for method tuning.
+        
+        Returns:
+            dict: Hyperparameter grids for each method
+        """
+        param_grids = {
+            'pca': {
+                'n_components': [2, 3, 5, 10, 20, 50]
+            },
+            'tsne': {
+                'perplexity': [5, 15, 30, 50],
+                'n_iter': [500, 1000, 2000]
+            },
+            'umap': {
+                'n_neighbors': [5, 10, 15, 30, 50],
+                'min_dist': [0.01, 0.1, 0.3, 0.5]
+            },
+            'kernel_pca': {
+                'kernel': ['rbf', 'poly', 'sigmoid'],
+                'gamma': [0.001, 0.01, 0.1, 1.0]
+            },
+            'isomap': {
+                'n_neighbors': [5, 10, 15, 20]
+            },
+            'lle': {
+                'n_neighbors': [5, 10, 15, 20],
+                'method': ['standard', 'ltsa', 'hessian', 'modified']
+            },
+            'autoencoder': {
+                'hidden_layers': [[64], [128, 64], [256, 128, 64]],
+                'epochs': [25, 50, 100],
+                'learning_rate': [0.001, 0.01]
+            }
+        }
+        return param_grids
