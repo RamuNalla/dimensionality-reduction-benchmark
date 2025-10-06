@@ -425,3 +425,46 @@ class DimensionalityReducer:        # Unified interface for various dimensionali
             }
         }
         return param_grids
+
+def get_default_methods():      # Get list of default methods to compare.
+    return ['pca', 'lda', 'ica', 'svd', 'tsne', 'umap', 'kernel_pca']
+
+def create_reducer(method_name, **kwargs):      # Factory function to create dimensionality reduction method.
+    """
+    Factory function to create dimensionality reduction method.
+    
+    Args:
+        method_name (str): Name of the method
+        **kwargs: Method-specific parameters
+        
+    Returns:
+        Configured method instance
+    """
+    reducer = DimensionalityReducer()
+    return reducer._get_method(method_name, **kwargs)
+
+if __name__ == "__main__":
+    
+    from src.data_loader import load_fashion_mnist      # Example usage
+    
+    X_train, X_test, y_train, y_test = load_fashion_mnist(subset_size=2000) # Load sample data
+    
+    reducer = DimensionalityReducer()       # Initialize reducer
+    
+    methods = ['pca', 'tsne', 'umap']       # Compare methods
+    results = reducer.compare_methods(
+        X_train, y_train, 
+        methods=methods, 
+        n_components=2
+    )
+    
+    for method, result in results.items():      # Print results
+        if 'error' in result:
+            print(f"{method}: Error - {result['error']}")
+        else:
+            print(f"{method}: Shape {result['embedding'].shape}, Time {result['fit_time']:.2f}s")
+    
+    print("\nAvailable methods:")       # Show method info
+    info = reducer.get_method_info()
+    for method, details in info.items():
+        print(f"- {method}: {details['name']} ({details['type']})")
