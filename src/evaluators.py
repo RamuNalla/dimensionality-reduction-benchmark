@@ -147,3 +147,97 @@ class DimensionalityReductionEvaluator:     # Comprehensive evaluation of dimens
             results['silhouette_score'] = np.nan
         
         return results
+
+    def neighborhood_preservation(self, X_original, X_reduced, k=10):
+        """
+        Evaluate how well local neighborhoods are preserved.
+        
+        Args:
+            X_original (np.ndarray): Original high-dimensional data
+            X_reduced (np.ndarray): Reduced dimensional data
+            k (int): Number of neighbors to consider
+            
+        Returns:
+            dict: Neighborhood preservation metrics
+        """
+        try:
+            n_samples = min(X_original.shape[0], 1000)  # Limit for computational efficiency
+            indices = np.random.choice(X_original.shape[0], n_samples, replace=False)
+            
+            X_orig_sample = X_original[indices]
+            X_red_sample = X_reduced[indices]
+            
+            # Calculate pairwise distances
+            dist_orig = squareform(pdist(X_orig_sample))
+            dist_red = squareform(pdist(X_red_sample))
+            
+            # Find k nearest neighbors in both spaces
+            trustworthiness_scores = []
+            continuity_scores = []
+            
+            for i in range(n_samples):
+                # Original space neighbors
+                orig_neighbors = np.argsort(dist_orig[i])[1:k+1]
+                
+                # Reduced space neighbors  
+                red_neighbors = np.argsort(dist_red[i])[1:k+1]
+                
+                # Trustworthiness: do close points in reduced space stay close in original?
+                trust = len(np.intersect1d(orig_neighbors, red_neighbors)) / k
+                trustworthiness_scores.append(trust)
+                
+                # Continuity: do close points in original space stay close in reduced?
+                cont = len(np.intersect1d(red_neighbors, orig_neighbors)) / k
+                continuity_scores.append(cont)
+            
+            results = {
+                'trustworthiness': np.mean(trustworthiness_scores),
+                'continuity': np.mean(continuity_scores)
+            }
+            
+        except Exception as e:
+            logger.warning(f"Neighborhood preservation calculation failed: {e}")
+            results = {
+                'trustworthiness': np.nan,
+                'continuity': np.nan
+            }
+        
+        return results
+    
+    def distance_correlation(self, X_original, X_reduced, method='pearson'):
+        """
+        Compute correlation between pairwise distances in original and reduced space.
+        
+        Args:
+            X_original (np.ndarray): Original high-dimensional data
+            X_reduced (np.ndarray): Reduced dimensional data
+            method (str): Correlation method ('pearson' or 'spearman')
+            
+        Returns:
+            float: Distance correlation
+        """
+        try:
+            # Sample for efficiency
+            n_samples = min(X_original.shape[0], 500)
+            indices = np.random.choice(X_original.shape[0], n_samples, replace=False)
+            
+            X_orig_sample = X_original[indices]
+            X_red_sample = X_reduced[indices]
+            
+            # Calculate pairwise distances
+            dist_orig = pdist(X_orig_sample)
+            dist_red = pdist(X_red_sample)
+            
+            # Compute correlation
+            if method == 'pearson':
+                corr, _ = pearsonr(dist_orig, dist_red)
+            elif method == 'spearman':
+                corr, _ = spearmanr(dist_orig, dist_red)
+            else:
+                raise ValueError(f"Unknown correlation method: {method}")
+                
+            return corr
+            
+        except Exception as e:
+            logger.warning(f"Distance correlation calculation failed: {e}")
+            return np.nan
