@@ -66,6 +66,8 @@ class DataLoader:
         logger.info(f"Loaded {X_train.shape[0]} training and {X_test.shape[0]} test samples")
         logger.info(f"Feature dimension: {X_train.shape[1]}")
 
+        return X_train, X_test, y_train, y_test
+
 
     def preprocess_data(self, X_train, X_test, method='standard'):      # Preprocess the data using various scaling methods.
         """
