@@ -241,3 +241,187 @@ class DimensionalityReductionEvaluator:     # Comprehensive evaluation of dimens
         except Exception as e:
             logger.warning(f"Distance correlation calculation failed: {e}")
             return np.nan
+
+    def evaluate_single_method(self, result_dict, X_original, X_test_original=None, 
+                              y_train=None, y_test=None):
+        """
+        Comprehensive evaluation of a single dimensionality reduction result.
+        
+        Args:
+            result_dict (dict): Result from dimensionality reduction
+            X_original (np.ndarray): Original training data
+            X_test_original (np.ndarray, optional): Original test data
+            y_train (np.ndarray, optional): Training labels
+            y_test (np.ndarray, optional): Test labels
+            
+        Returns:
+            dict: Comprehensive evaluation metrics
+        """
+        if 'error' in result_dict:
+            return {'error': result_dict['error']}
+        
+        method_name = result_dict['method']
+        X_reduced = result_dict['embedding']
+        method_obj = result_dict.get('model')
+        
+        logger.info(f"Evaluating {method_name}...")
+        
+        evaluation = {
+            'method': method_name,
+            'n_components': result_dict.get('n_components', X_reduced.shape[1]),
+            'fit_time': result_dict.get('fit_time', np.nan),
+            'embedding_shape': X_reduced.shape
+        }
+        
+        # Basic metrics
+        evaluation['reconstruction_error'] = self.reconstruction_error(
+            X_original, X_reduced, method_obj
+        )
+        evaluation['explained_variance_ratio'] = self.explained_variance_ratio(method_obj)
+        
+        # Distance preservation
+        evaluation.update(self.neighborhood_preservation(X_original, X_reduced))
+        evaluation['distance_correlation_pearson'] = self.distance_correlation(
+            X_original, X_reduced, 'pearson'
+        )
+        evaluation['distance_correlation_spearman'] = self.distance_correlation(
+            X_original, X_reduced, 'spearman'
+        )
+        
+        # Clustering performance
+        clustering_metrics = self.clustering_performance(X_reduced, y_train)
+        evaluation.update(clustering_metrics)
+        
+        # Classification performance (if labels available)
+        if y_train is not None:
+            # Need to transform test data if available
+            X_test_reduced = None
+            if X_test_original is not None and hasattr(method_obj, 'transform'):
+                try:
+                    X_test_reduced = method_obj.transform(X_test_original)
+                except:
+                    pass
+            
+            if X_test_reduced is not None and y_test is not None:
+                clf_metrics = self.classification_performance(
+                    X_reduced, X_test_reduced, y_train, y_test
+                )
+                evaluation['classification'] = clf_metrics
+        
+        return evaluation
+
+    def evaluate_all_methods(self, results_dict, X_original, X_test_original=None, 
+                           y_train=None, y_test=None):
+        """
+        Evaluate all methods in results dictionary.
+        
+        Args:
+            results_dict (dict): Dictionary of dimensionality reduction results
+            X_original (np.ndarray): Original training data
+            X_test_original (np.ndarray, optional): Original test data  
+            y_train (np.ndarray, optional): Training labels
+            y_test (np.ndarray, optional): Test labels
+            
+        Returns:
+            dict: Evaluation results for all methods
+        """
+        all_evaluations = {}
+        
+        for method_name, result in results_dict.items():
+            evaluation = self.evaluate_single_method(
+                result, X_original, X_test_original, y_train, y_test
+            )
+            all_evaluations[method_name] = evaluation
+        
+        return all_evaluations
+    
+    def create_comparison_table(self, evaluations):
+        """
+        Create a comparison table of evaluation metrics.
+        
+        Args:
+            evaluations (dict): Dictionary of evaluation results
+            
+        Returns:
+            pd.DataFrame: Comparison table
+        """
+        rows = []
+        
+        for method_name, eval_dict in evaluations.items():
+            if 'error' in eval_dict:
+                continue
+                
+            row = {
+                'Method': method_name,
+                'Components': eval_dict.get('n_components', np.nan),
+                'Fit Time (s)': eval_dict.get('fit_time', np.nan),
+                'Reconstruction Error': eval_dict.get('reconstruction_error', np.nan),
+                'Explained Variance': eval_dict.get('explained_variance_ratio', np.nan),
+                'Silhouette Score': eval_dict.get('silhouette_score', np.nan),
+                'Trustworthiness': eval_dict.get('trustworthiness', np.nan),
+                'Continuity': eval_dict.get('continuity', np.nan),
+                'Distance Correlation': eval_dict.get('distance_correlation_pearson', np.nan)
+            }
+            
+            # Add classification metrics if available
+            if 'classification' in eval_dict:
+                clf_metrics = eval_dict['classification']
+                if 'knn' in clf_metrics and 'error' not in clf_metrics['knn']:
+                    row['KNN Accuracy'] = clf_metrics['knn'].get('test_accuracy', np.nan)
+                if 'logistic' in clf_metrics and 'error' not in clf_metrics['logistic']:
+                    row['Logistic Accuracy'] = clf_metrics['logistic'].get('test_accuracy', np.nan)
+            
+            rows.append(row)
+        
+        df = pd.DataFrame(rows)
+        return df.round(4)
+    
+
+def evaluate_all_metrics(results_dict, X_original, X_test_original=None, 
+                        y_train=None, y_test=None):
+    """
+    Convenience function to evaluate all methods with all metrics.
+    
+    Args:
+        results_dict (dict): Dictionary of dimensionality reduction results
+        X_original (np.ndarray): Original training data
+        X_test_original (np.ndarray, optional): Original test data
+        y_train (np.ndarray, optional): Training labels  
+        y_test (np.ndarray, optional): Test labels
+        
+    Returns:
+        DimensionalityReductionEvaluator: Evaluator with computed metrics
+    """
+    evaluator = DimensionalityReductionEvaluator()
+    
+    all_evaluations = evaluator.evaluate_all_methods(
+        results_dict, X_original, X_test_original, y_train, y_test
+    )
+    
+    evaluator.metrics = all_evaluations
+    return evaluator
+
+
+if __name__ == "__main__":
+    # Example usage
+    from src.data_loader import load_fashion_mnist
+    from src.dimensionality_reducer import DimensionalityReducer
+    
+    # Load data
+    X_train, X_test, y_train, y_test = load_fashion_mnist(subset_size=1000)
+    
+    # Apply dimensionality reduction
+    reducer = DimensionalityReducer()
+    results = reducer.compare_methods(
+        X_train, y_train, 
+        methods=['pca', 'tsne', 'umap'], 
+        n_components=2
+    )
+    
+    # Evaluate results
+    evaluator = evaluate_all_metrics(results, X_train, X_test, y_train, y_test)
+    
+    # Create comparison table
+    comparison_table = evaluator.create_comparison_table(evaluator.metrics)
+    print("Evaluation Results:")
+    print(comparison_table.to_string(index=False))
