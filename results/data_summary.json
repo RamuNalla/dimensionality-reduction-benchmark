@@ -1,0 +1,13 @@
+{
+  "dataset": "Fashion-MNIST",
+  "n_train_samples": 10000,
+  "n_test_samples": 2000,
+  "n_features": 784,
+  "n_classes": 10,
+  "class_balance_ratio": 0.9320866141732284,
+  "pca_95_components": 1,
+  "pca_99_components": 1,
+  "mean_correlation": 0.21417729559152274,
+  "system_feasible": true,
+  "preprocessing": "StandardScaler"
+}
