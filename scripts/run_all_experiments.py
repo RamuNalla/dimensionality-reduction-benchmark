@@ -69,3 +69,12 @@ def parse_arguments():
     )
     
     return parser.parse_args()
+
+def filter_methods_by_feasibility(methods, n_samples, skip_slow):
+    """Filter methods based on dataset size and computational constraints."""
+    if skip_slow and n_samples > 10000:
+        slow_methods = ['tsne', 'isomap', 'lle', 'autoencoder']
+        methods = [m for m in methods if m not in slow_methods]
+        logging.info(f"Skipping slow methods for large dataset: {slow_methods}")
+    
+    return methods
