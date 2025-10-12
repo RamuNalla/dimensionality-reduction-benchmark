@@ -19,3 +19,53 @@ from utils import (
     generate_summary_report
 )
 
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Run dimensionality reduction experiments on Fashion-MNIST'
+    )
+    
+    parser.add_argument(
+        '--subset-size', type=int, default=5000,
+        help='Number of samples to use (default: 5000)'
+    )
+    
+    parser.add_argument(
+        '--methods', nargs='+', 
+        default=['pca', 'lda', 'ica', 'tsne', 'umap', 'kernel_pca'],
+        help='Methods to run (default: pca lda ica tsne umap kernel_pca)'
+    )
+    
+    parser.add_argument(
+        '--n-components', type=int, default=2,
+        help='Number of components for dimensionality reduction (default: 2)'
+    )
+    
+    parser.add_argument(
+        '--output-dir', default='results/',
+        help='Output directory for results (default: results/)'
+    )
+    
+    parser.add_argument(
+        '--preprocessing', choices=['standard', 'minmax', 'none'], 
+        default='standard',
+        help='Data preprocessing method (default: standard)'
+    )
+    
+    parser.add_argument(
+        '--skip-slow', action='store_true',
+        help='Skip slow methods like t-SNE for large datasets'
+    )
+    
+    parser.add_argument(
+        '--random-state', type=int, default=42,
+        help='Random state for reproducibility (default: 42)'
+    )
+    
+    parser.add_argument(
+        '--log-level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], 
+        default='INFO',
+        help='Logging level (default: INFO)'
+    )
+    
+    return parser.parse_args()
