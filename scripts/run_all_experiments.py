@@ -78,3 +78,35 @@ def filter_methods_by_feasibility(methods, n_samples, skip_slow):
         logging.info(f"Skipping slow methods for large dataset: {slow_methods}")
     
     return methods
+
+def setup_method_parameters():
+    """Define method-specific parameters for optimal performance."""
+    return {
+        'tsne': {
+            'perplexity': min(30, 50),  # Will be adjusted based on sample size
+            'n_iter': 1000,
+            'learning_rate': 200.0
+        },
+        'umap': {
+            'n_neighbors': 15,
+            'min_dist': 0.1,
+            'metric': 'euclidean'
+        },
+        'kernel_pca': {
+            'kernel': 'rbf',
+            'gamma': 0.01
+        },
+        'isomap': {
+            'n_neighbors': 10
+        },
+        'lle': {
+            'n_neighbors': 10,
+            'method': 'standard'
+        },
+        'autoencoder': {
+            'hidden_layers': [128, 64],
+            'epochs': 50,
+            'batch_size': 256,
+            'learning_rate': 0.001
+        }
+    }
