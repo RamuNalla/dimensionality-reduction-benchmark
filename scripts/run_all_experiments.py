@@ -259,3 +259,37 @@ def run_experiments(args):
         # Clean up
         logging.shutdown()
 
+
+def main():
+    """Main entry point."""
+    args = parse_arguments()
+    
+    try:
+        experiment_results = run_experiments(args)
+        
+        print("\n" + "="*80)
+        print("EXPERIMENTS COMPLETED SUCCESSFULLY!")
+        print("="*80)
+        print(f"Results saved to: {args.output_dir}")
+        print("Files generated:")
+        print(f"  - results.pkl (dimensionality reduction results)")
+        print(f"  - evaluations.pkl (evaluation metrics)")
+        print(f"  - metrics/comparison_table.csv (performance comparison)")
+        print(f"  - figures/ (visualizations)")
+        print(f"  - summary_report.txt (comprehensive report)")
+        print(f"  - experiment.log (detailed logs)")
+        print("\nNext steps:")
+        print("  - Review the summary report for key findings")
+        print("  - Examine visualizations in the figures/ directory")
+        print("  - Run generate_report.py for interactive analysis")
+        
+        return 0
+        
+    except Exception as e:
+        print(f"\nERROR: Experiments failed - {str(e)}")
+        print("Check the log file for detailed error information.")
+        return 1
+
+
+if __name__ == "__main__":
+    exit_code = main()
