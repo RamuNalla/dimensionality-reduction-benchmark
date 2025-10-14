@@ -88,8 +88,8 @@ def create_performance_dashboard(evaluations):
                marker_color='lightblue', showlegend=False),
         row=1, col=1
     )
-    fig.update_yaxis(type="log", row=1, col=1)
-    fig.update_yaxis(title_text="Time (seconds, log scale)", row=1, col=1)
+    fig.update_yaxes(type="log", row=1, col=1)
+    fig.update_yaxes(title_text="Time (seconds, log scale)", row=1, col=1)
     
     # Silhouette score
     fig.add_trace(
@@ -97,7 +97,7 @@ def create_performance_dashboard(evaluations):
                marker_color='lightgreen', showlegend=False),
         row=1, col=2
     )
-    fig.update_yaxis(title_text="Silhouette Score", row=1, col=2)
+    fig.update_yaxes(title_text="Silhouette Score", row=1, col=2)
     
     # Trustworthiness
     fig.add_trace(
@@ -105,7 +105,7 @@ def create_performance_dashboard(evaluations):
                marker_color='lightcoral', showlegend=False),
         row=2, col=1
     )
-    fig.update_yaxis(title_text="Trustworthiness", row=2, col=1)
+    fig.update_yaxes(title_text="Trustworthiness", row=2, col=1)
     
     # Continuity
     fig.add_trace(
@@ -113,7 +113,7 @@ def create_performance_dashboard(evaluations):
                marker_color='lightyellow', showlegend=False),
         row=2, col=2
     )
-    fig.update_yaxis(title_text="Continuity", row=2, col=2)
+    fig.update_yaxes(title_text="Continuity", row=2, col=2)
     
     fig.update_layout(
         title_text="Performance Metrics Dashboard",

@@ -1,0 +1,47 @@
+[
+  {
+    "timestamp": "2025-10-14T12:28:58.504724",
+    "method": "pca",
+    "parameters": {
+      "n_components": 2
+    },
+    "results": {
+      "fit_time": 0.11062026023864746,
+      "embedding_shape": [
+        5000,
+        2
+      ]
+    },
+    "metrics": null
+  },
+  {
+    "timestamp": "2025-10-14T12:28:58.506129",
+    "method": "lda",
+    "parameters": {
+      "n_components": 2
+    },
+    "results": {
+      "fit_time": 0.7272095680236816,
+      "embedding_shape": [
+        5000,
+        2
+      ]
+    },
+    "metrics": null
+  },
+  {
+    "timestamp": "2025-10-14T12:28:58.507327",
+    "method": "ica",
+    "parameters": {
+      "n_components": 2
+    },
+    "results": {
+      "fit_time": 1.0854911804199219,
+      "embedding_shape": [
+        5000,
+        2
+      ]
+    },
+    "metrics": null
+  }
+]

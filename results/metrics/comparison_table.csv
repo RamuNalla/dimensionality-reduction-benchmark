@@ -1,0 +1,4 @@
+Method,Components,Fit Time (s),Reconstruction Error,Explained Variance,Silhouette Score,Trustworthiness,Continuity,Distance Correlation,KNN Accuracy,Logistic Accuracy
+pca,2,0.1106,0.6312,0.368,0.3879,0.1884,0.1884,0.6735,0.504,0.481
+lda,2,0.7272,,0.6513,0.405,0.084,0.084,0.2733,0.578,0.586
+ica,2,1.0855,0.6312,,0.387,0.1905,0.1905,0.702,0.516,0.48

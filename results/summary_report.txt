@@ -1,0 +1,29 @@
+================================================================================
+DIMENSIONALITY REDUCTION COMPARISON REPORT
+================================================================================
+Generated on: 2025-10-14 12:29:20
+
+DATASET SUMMARY
+----------------------------------------
+Number of samples: 5000
+Original dimensions: Unknown
+Reduced dimensions: 2
+
+METHOD COMPARISON
+----------------------------------------
+Method  Fit Time  Silhouette  Trustworthiness
+   pca  0.110620    0.387938           0.1884
+   lda  0.727210    0.404998           0.0840
+   ica  1.085491    0.387005           0.1905
+
+RECOMMENDATIONS
+----------------------------------------
+Fastest method: pca (0.11s)
+Best clustering: lda (Silhouette: 0.405)
+Best preservation: ica (Trustworthiness: 0.191)
+
+Use cases:
+- For visualization: t-SNE or UMAP
+- For speed: PCA or SVD
+- For downstream ML: LDA (supervised) or PCA
+- For non-linear data: UMAP, t-SNE, or Kernel PCA
